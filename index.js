@@ -7,11 +7,33 @@ const crypto = require("crypto");
 
 module.exports = {
 
+    generateSessionKey: function (value, appKey) {
+        var cypher = 'aes-' + appKey.length * 8 + '-cbc';
+        var iv = crypto.randomBytes(16);
+
+        var cipher = crypto.createCipheriv(cypher, appKey, iv);
+        value = cipher.update(value, 'utf8', 'base64');
+        value += cipher.final('base64');
+
+        iv = iv.toString('base64');
+
+        var hmac = crypto.createHmac('sha256', appKey);
+        hmac.update(iv + value);
+        var mac = hmac.digest('hex');
+
+        var json = '{"iv":"' + iv + '","value":"' + value.replace('/', '\\/') + '","mac":"' + mac + '"}';
+
+        var sessionKey = new Buffer(json);
+
+        return sessionKey.toString('base64');
+    },
+
     getSessionId: function (sessionKey, appKey) {
         var cypher = 'aes-' + appKey.length * 8 + '-cbc';
 
         sessionKey = new Buffer(sessionKey, 'base64');
         sessionKey = sessionKey.toString();
+
         sessionKey = JSON.parse(sessionKey);
 
         appKey = new Buffer(appKey);
@@ -29,6 +51,9 @@ module.exports = {
             redis.get(prefix + ':' + sessionId, function (err, value) {
                 if (err != null)
                     return reject(err);
+
+                if (value == null)
+                    return reject('No data found');
 
                 return resolve(unserialize(unserialize(value)));
             });

@@ -5,23 +5,34 @@ const port = 3000
 
 var redis = require('redis');
 
+// create redis connection instance
 var client = redis.createClient({
 	host: '127.0.0.1',
 	port: '6379',
     password: 'admin'
 });
 
+// Laravel APP_KEY
+var appKey = 'rY2iKgS0DdJrQ3Inhj68DSSG2gW2adZj';
+
+// CREATE SESSION KEY
+// to generete random, use rchars.randomSafeSync(40)
+var value = 'qpob5ebXt7mH6wvpxkXcitixvTsQrMQakcL7Uw7m';
+
+var sessionKeyGener = lrs.generateSessionKey(value, appKey);
+console.log(sessionKeyGener); // session key to save in cookie
+
+// GET SESSION ID BY SESSION KEY
+var sessionID = lrs.getSessionId(sessionKeyGener, appKey);
+console.log(sessionID); // should return the same as value
+
+// ADD DATA TO SESSION STORE
 var object = { "_token": "fyDV3CBI5xwQan3gaw4nQymybdybUKDKV5wqHGCd" };
-var appKey = 'rY2iKgS0DAJrQ3Inhj68DSSG2gW2aXZj';
-var sessionKey = 'eyJpdiI6Im5YNkl0YnlQcEp1T0FUYWRaaWZEdlE9PSIsInZhbHVlIjoiVEJuVTlDODNFK3poeTNwYndxd2h0TGIxeTZ2Ym9ybGgrVWxmSVwvSWNSTDdnTVwvK0dCTWdNV0xxXC9FU25KQ0haUCIsIm1hYyI6ImIwODI5NmM3ZjAwOTE5NDgyYWIyZmE1MWZmMTZmZTA1OGEzN2RjOTU1Nzg3ZTM1NDA3NTE3ZTdiYjE0YTFlN2YifQ==';
+lrs.setSession(sessionID, client, object, 'laravel');
 
-var sessionID = lrs.getSessionId(sessionKey, appKey);
-var test = lrs.getSession(sessionID, client, 'edito.');
-
-// lrs.setSession('test', client, object, 'laravel');
-// var test = lrs.getSession('test', client, 'laravel');
-
-test.then(function(value){
+// GET DATA FROM SESSION STORE
+var data = lrs.getSession(sessionID, client, 'laravel');
+data.then(function(value){
     console.log(value);
 });
 
