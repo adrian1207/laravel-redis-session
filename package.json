@@ -1,6 +1,6 @@
 {
   "name": "laravel-redis-session",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Package for node to get and set laravel session on redis driver.",
   "main": "index.js",
   "scripts": {
